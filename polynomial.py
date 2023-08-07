@@ -4,6 +4,7 @@ from IPython.display import display, Latex
 from parameters import F
 import numpy as np
 from collections.abc import Iterable
+import json
 
 class MVLinear:
     """
@@ -255,6 +256,7 @@ class MVLinear:
                 raise ArithmeticError("Cannot collapse: Variable exist. ")
             new_terms[t & anti_mask] = v
         return MVLinear(self.num_variables - n, new_terms)
+    
 
 def makeMVLinearConstructor(num_variables: int) -> Callable[[Dict[int, int]], MVLinear]:
     """
@@ -267,4 +269,17 @@ def makeMVLinearConstructor(num_variables: int) -> Callable[[Dict[int, int]], MV
         return MVLinear(num_variables, term)
 
     return f
+
+def jsonDump(mvl: MVLinear, file: str):
+    terms = {k:int(v) for k,v in mvl.terms.items()}
+    d={"n": mvl.num_variables, "terms":terms}
+    with open(file,'w') as fd:
+        json.dump(d, fd, indent=4)
+
+def jsonLoad(file:str)->MVLinear:
+    with open(file, 'r') as fd:
+        d=json.load(fd)
+        n = int(d['n'])
+        terms = {int(k):F(int(v)) for k,v in d['terms'].items()}
+        return MVLinear(n, terms)
 

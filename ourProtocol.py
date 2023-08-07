@@ -3,11 +3,12 @@ import CNF3
 import parameters
 import numpy as np
 from enum import Enum
-from auxiliary import get_delimiters, prod, get_phi_lde
+from auxiliary import get_delimiters, prod, get_phi_lde, sumGF2
 from TensorCode import LinCode
 from MVL_LDE import I, lde
 from CNF3 import witness, clause
 from parameters import phi, z, tensor_code, NUM_ROWS_TO_CHECK, F, baseSubset
+from tqdm import tqdm
 
 Status = Enum('Status', ['IN_PROCCESS', 'ACC', 'REJ'])
 
@@ -81,7 +82,7 @@ class AllZeroVerifier:
             self.z = self.randomFieldElementVector(self.gf, self.m)
             return self.z
         else:
-            tmp0, tmp1 = polynomial(F(0)), polynomial(F(1))
+            tmp0, tmp1 = polynomial(self.gf(0)), polynomial(self.gf(1))
             if not (tmp0 + tmp1 == self.alpha):
                 self.status = Status.REJ
                 return
@@ -125,9 +126,6 @@ class AllZeroProver:
     def intToBits(i):
         return [int(digit) for digit in bin(i)[2:]]  # [2:] to chop off the "0b" part
 
-    def sumGF2(self, rs, x, m):
-        return sum((self.Q(*rs, x, *i) for i in itertools.product(baseSubset, repeat=m)), start=self.gf(0))
-
     def receive(self, z):
         # do the all zero calculation and return the polynomial.
         if self.round == 0:
@@ -137,7 +135,7 @@ class AllZeroProver:
         else:
             self.rs.append(z)
         self.round += 1
-        return lambda x: self.sumGF2(self.rs.copy(), x, self.m-self.round)  # Q tilda
+        return lambda x: sumGF2(self.Q, self.rs.copy(), x, self.m-self.round)  # Q tilda
 
 
 class AllZeroProof:
@@ -317,4 +315,8 @@ prover:                              verifier:
 # aim for soudness error 2**-32
 
 if __name__ == '__main__':
+    from time import time
+    start = time()
     main()
+    end = time()
+    print(f'execution time (in seconds): {end-start}')

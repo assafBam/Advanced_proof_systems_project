@@ -9,6 +9,7 @@ from parameters import F
 from polynomial import MVLinear as MVL
 from itertools import product
 import functools
+from tqdm import tqdm
 
 def I0(xi, yi):
     if isinstance(xi, F) or isinstance(yi, F):
@@ -20,7 +21,7 @@ def I(h,n):
     return functools.reduce(lambda a,b: a*b, (MVL(n, {1<<i:-F(1), 0:F(1)-F(h[i])}) for i in range(n)))
 
 def lde(f, H, m):
-    return sum((I(h,m)*f(*h) for h in product(H, repeat=m)), start=MVL(m,{0:F(0)}))
+    return sum((I(h,m)*f(*h) for h in tqdm(product(H, repeat=m), total=len(H)**m)), start=MVL(m,{0:F(0)}))
 
 if __name__ == '__main__':
     from parameters import phi

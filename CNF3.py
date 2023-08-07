@@ -31,7 +31,7 @@ def eval(phi, z):
     phi is a 3-CNF formula represented as a list of tuples.
         each tuple represent a clause, and each element in the tuple can be a <number> or -<number> (negative number, representing "not") 
     '''
-    return any(all(z[replace_n(x)] if x>=0 else not z[replace_n(-x)] for x in clause) for clause in phi)
+    return all(any(z[replace_n(x)] if x>=0 else not z[replace_n(-x)] for x in clause) for clause in phi)
     for clause in phi:
         if not any(z[replace_n(x)] if x>=0 else not z[replace_n(-x)] for x in clause):
             return False
